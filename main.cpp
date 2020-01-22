@@ -94,7 +94,10 @@ Labirynth initLabirynth(int height, int width) {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++){
             lab[i][j] = Cell(i, j);
-            lab[i][j].type = WALL;
+            if (i%2 == 1 && j%2 == 1)
+                lab[i][j].type = CORRIDOR;
+            else
+                lab[i][j].type = WALL;
         }
     }
 
@@ -110,6 +113,31 @@ RowType getRowType(int currentIndex, int maxIndex) {
         return STANDARD;
 }
 
+// DELETE LATER    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void showRow(Row row) {
+    cout << endl;
+
+    for (int i = 0; i < row.size(); i++) {
+        Cell cell = row[i];
+
+        if (cell.type == WALL) {
+            cout << "#";
+        } else if (cell.type == START) {
+            cout << "$";
+        } else if (cell.type == END) {
+            cout << "@";
+        } else {
+            if(cell.currentSet == -1) {
+                cout << " ";
+            } else {
+                cout << cell.currentSet;
+            }
+        }
+    }
+
+    cout << endl;
+}
+
 void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shortestPossibleLabirynth) {
         switch(rowType) {
             case FIRST : {
@@ -118,21 +146,17 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
                 if (shortestPossibleLabirynth) {
                     exit = getRandomIntFromRange(1, nextRow.size() - 2);
                 }
-                cout << endl << entrance << endl;
 
                 for (int a = 0; a < previousRow.size(); a++) {
+                    // set one of top labirynth walls as entrance at random
                     if (a == entrance) {
                         previousRow[a].type = START;
                         previousRow[a].currentSet = 1;
-                    } else {
-                        previousRow[a].type = WALL;
                     }
 
                     if (shortestPossibleLabirynth){
                         if (a == exit)
                             nextRow[a].type = END;
-                        else
-                            nextRow[a].type = WALL;
 
                         if (a != 0 && a != nextRow.size() - 1)
                             row[a].type = CORRIDOR;
@@ -143,7 +167,6 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
                     return;
             }
             case STANDARD : {
-                row = previousRow;
                 set<int> usedSetNumbers;
                 usedSetNumbers.clear();
 
@@ -157,11 +180,16 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
                     }
                 }
 
-                cout << endl << endl << "row without random cells, just from start: ";
-                for (int a = 0; a < row.size(); a++)
-                    if(row[a].currentSet != -1)
-                        cout << row[a].currentSet;
-                cout << endl;
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                cout << endl << "after assigning set from previous row\nprevious row is: " ;
+                showRow(previousRow);
+                cout << "current row is: " ;
+                showRow(row);
+                cout << "next row is: " ;
+                showRow(nextRow);
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 
                 // if cell don't belong to any set, assign it to completely new set
                 for(int i = 1; i< row.size() - 1; i+=2) {
@@ -169,13 +197,46 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
                     usedSetNumbers.insert(row[i].currentSet);
                 }
 
-                cout << endl << endl << "row with random cells, except one from start: ";
-                for (int a = 0; a < row.size(); a++)
-                    if(row[a].currentSet != -1)
-                        cout << row[a].currentSet;
-                cout << endl << endl;
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                cout << endl << "After assigning each corridor cell new set number, different from any other \nprevious row is: " ;
+                showRow(previousRow);
+                cout << "current row is: " ;
+                showRow(row);
+                cout << "next row is: " ;
+                showRow(nextRow);
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+
+                // Randomly generate passages or leave walls between adjacent row cells
                 for(int i = 1; i< row.size() - 3; i+=2) {
+
+                    // if adjacent cells don't belong to the same set
+                    if(row[i].currentSet != row[i+2].currentSet) {
+                        bool joinAdjacentCells = generateRandomBool();
+                        if (joinAdjacentCells){
+                            // save index and set of both cell to join and current cell for further reference
+                            int nextCellIndex = i+2;
+                            const int currentSet = row[i].currentSet;
+                            const int setBeingJoined = row[nextCellIndex].currentSet;
+                            do{
+                                // if next cell belongs to same set as previous joined cell
+                                if (row[nextCellIndex].currentSet == setBeingJoined) {
+                                    // make path between cells
+                                    row[nextCellIndex+1].type = CORRIDOR;
+
+                                    // join right cell to left cells set
+                                    row[nextCellIndex].currentSet = currentSet;
+
+                                    // update next cell index
+                                    nextCellIndex += 2;
+
+                                } while (!nextCellIndex > row.size() - 4 || row[nextCellIndex].currentSet == setBeingJoined);
+                            }
+                        }
+                    }
+
+                        // MAYBE DELETE
                     if(row[i].currentSet == row[i+2].currentSet){
                         row[i+1].type = WALL;
                     } else {
