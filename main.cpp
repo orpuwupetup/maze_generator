@@ -9,8 +9,10 @@ using namespace std;
 enum CellType {CORRIDOR, WALL, START, END, NOT_SET};
 enum RowType {FIRST, STANDARD, LAST, NO_ROW};
 
+const int NO_SET_ASSIGNED = -1;
+
 struct Cell {
-    int x, y, currentSet = -1;
+    int x, y, currentSet = NO_SET_ASSIGNED;
     CellType type = NOT_SET;
 
     Cell(){}
@@ -31,6 +33,7 @@ bool generateRandomBool();
 Labirynth generateLabirynth(int height, int width);
 Labirynth initLabirynth(int height, int width);
 void showLabirynth(Labirynth &labirynth);
+void showRow(Row row);
 
 RowType getRowType(int currentIndex, int maxIndex);
 void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shortestPossibleLabirynth = false);
@@ -116,7 +119,6 @@ RowType getRowType(int currentIndex, int maxIndex) {
 // DELETE LATER    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void showRow(Row row) {
     cout << endl;
-
     for (int i = 0; i < row.size(); i++) {
         Cell cell = row[i];
 
@@ -127,20 +129,18 @@ void showRow(Row row) {
         } else if (cell.type == END) {
             cout << "@";
         } else {
-            if(cell.currentSet == -1) {
+            if(cell.currentSet == NO_SET_ASSIGNED) {
                 cout << " ";
             } else {
                 cout << cell.currentSet;
             }
         }
     }
-
     cout << endl;
 }
 
 void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shortestPossibleLabirynth) {
-        switch(rowType) {
-            case FIRST : {
+        if (rowType == FIRST) {
                 int entrance = getRandomIntFromRange(1, previousRow.size() - 2);
                 int exit = -1;
                 if (shortestPossibleLabirynth) {
@@ -166,8 +166,9 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
                 if (shortestPossibleLabirynth)
                     return;
             }
-            case STANDARD : {
-                set<int> usedSetNumbers;
+
+            // Standard row creation
+            set<int> usedSetNumbers;
                 usedSetNumbers.clear();
 
                 // if cell in previous row has down passage, assign cell beneath it to the same set
@@ -176,17 +177,19 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
                         row[i].currentSet = previousRow[i].currentSet;
                         usedSetNumbers.insert(row[i].currentSet);
                     } else {
-                        row[i].currentSet = -1;
+                        row[i].currentSet = NO_SET_ASSIGNED;
                     }
                 }
 
                 // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                cout << endl << "after assigning set from previous row\nprevious row is: " ;
+                cout << endl << "after assigning set from previous row \nprevious row is:   " << previousRow[0].x  ;
                 showRow(previousRow);
-                cout << "current row is: " ;
+                cout << "current row is:    " << row[0].x ;
                 showRow(row);
-                cout << "next row is: " ;
+                cout << "next row is:    " << nextRow[0].x;
                 showRow(nextRow);
+                    cout << endl;
+
                 // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -198,99 +201,140 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
                 }
 
                 // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                cout << endl << "After assigning each corridor cell new set number, different from any other \nprevious row is: " ;
+                cout << endl << "After assigning each corridor cell new set number, different from any other \nprevious row is:   " << previousRow[0].x  ;
                 showRow(previousRow);
-                cout << "current row is: " ;
+                cout << "current row is:    " << row[0].x ;
                 showRow(row);
-                cout << "next row is: " ;
+                cout << "next row is:    " << nextRow[0].x;
                 showRow(nextRow);
+                    cout << endl;
+
                 // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
 
                 // Randomly generate passages or leave walls between adjacent row cells
                 for(int i = 1; i< row.size() - 3; i+=2) {
 
                     // if adjacent cells don't belong to the same set
                     if(row[i].currentSet != row[i+2].currentSet) {
-                        bool joinAdjacentCells = generateRandomBool();
-                        if (joinAdjacentCells){
+                        bool joinAdjacentCellsSets = generateRandomBool();
+                        if (joinAdjacentCellsSets){
                             // save index and set of both cell to join and current cell for further reference
                             int nextCellIndex = i+2;
                             const int currentSet = row[i].currentSet;
                             const int setBeingJoined = row[nextCellIndex].currentSet;
-                            do{
-                                // if next cell belongs to same set as previous joined cell
-                                if (row[nextCellIndex].currentSet == setBeingJoined) {
+
+                            for(int j = 1; j< row.size() - 1; j+=2) {
+                                if (row[j].currentSet == setBeingJoined) {
+                                    row[j].currentSet = currentSet;
+                                }
+                            }
+                            row[i+1].type = CORRIDOR;
+
+                        //    do{
+                         //       // if next cell belongs to same set as previous joined cell
+                         //       if (row[nextCellIndex].currentSet == setBeingJoined) {
                                     // make path between cells
-                                    row[nextCellIndex+1].type = CORRIDOR;
+                          //          row[nextCellIndex-1].type = CORRIDOR;
 
                                     // join right cell to left cells set
-                                    row[nextCellIndex].currentSet = currentSet;
+                          //          row[nextCellIndex].currentSet = currentSet;
 
                                     // update next cell index
-                                    nextCellIndex += 2;
-
-                                } while (!nextCellIndex > row.size() - 4 || row[nextCellIndex].currentSet == setBeingJoined);
-                            }
-                        }
-                    }
-
-                        // MAYBE DELETE
-                    if(row[i].currentSet == row[i+2].currentSet){
-                        row[i+1].type = WALL;
-                    } else {
-                        // generate random bool to determine if cells should be separated or not
-                        if (generateRandomBool()) {
-                            row[i+1].type = WALL;
-                        } else {
-                            int setToMerge = row[i+2].currentSet;
-                            int indexToMerge = i;
-                            do {
-                                indexToMerge += 2;
-                                row[indexToMerge].currentSet = row[i].currentSet;
-                                i += 2;
-                            } while (row[i+2].currentSet == setToMerge && i < row.size() - 1);
+                          //          nextCellIndex += 2;
+                          //      }
+                        //    } while (nextCellIndex <= row.size() - 4 && row[nextCellIndex].currentSet == setBeingJoined);
                         }
                     }
                 }
 
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                cout << endl << "After joining or dividing adjacent cells\nprevious row is:   " << previousRow[0].x  ;
+                showRow(previousRow);
+                cout << "current row is:    " << row[0].x ;
+                showRow(row);
+                cout << "next row is:    " << nextRow[0].x;
+                showRow(nextRow);
+                cout << endl;
+
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+                // Only difference between standard and last row creation
+                if (rowType != LAST) {
+
+                // randomly generate bottom passages (every set has to have at least one such passage
                 bool setHasBottomCorridor = false;
-                int currentSet = -1;
-                for(int i = 1; i< row.size() - 3; i+=2) {
+                int currentSet = row[1].currentSet;
+                for(int i = 1; i< row.size() - 1; i+=2) {
+
+                    // if current cell belongs to different set than former one
                     if (row[i].currentSet != currentSet) {
-                        currentSet = row[i].currentSet;
                         setHasBottomCorridor = false;
                     }
 
-                    // generate random bool to determine if cell should have bottom wall or not
-                    if (row[i+2].currentSet != currentSet && !setHasBottomCorridor) {
-                        nextRow[i].type = CORRIDOR;
-                        nextRow[i].currentSet = row[i].currentSet;
-                    }else {
-                        if(generateRandomBool()) {
+                    // generate random bool to determine if cell should have bottom passage or not
+                    bool makeBottomPassage = generateRandomBool();
+
+                    // if cell is not last one
+                    if (i < row.size() - 3) {
+                        // if next cell doesn't belong to current set and current set don't have bottom passage yet or if random generator decided to make passage
+                        if (makeBottomPassage || (row[i+2].currentSet != currentSet && !setHasBottomCorridor)) {
                             nextRow[i].type = CORRIDOR;
                             nextRow[i].currentSet = row[i].currentSet;
                             setHasBottomCorridor = true;
-                        } else {
-                            nextRow[i].type = WALL;
+                        }
+                    } else {
+                        if (makeBottomPassage || !setHasBottomCorridor) {
+                            nextRow[i].type = CORRIDOR;
+                            nextRow[i].currentSet = row[i].currentSet;
+                            setHasBottomCorridor = true;
                         }
                     }
 
+                    currentSet = row[i].currentSet;
                 }
 
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                cout << endl << "After making random bottom passages\nprevious row is:   " << previousRow[0].x  ;
+                showRow(previousRow);
+                cout << "current row is:    " << row[0].x ;
+                showRow(row);
+                cout << "next row is:    " << nextRow[0].x;
+                showRow(nextRow);
+                    cout << endl;
 
-                break;
-            }
-            case LAST : {
 
-                break;
-            }
-        }
+                cout << " !!!!!!!!!!!!!!!!!!!!!!!!! END FOR STANDARD !!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                } else {
+
+                    // Knock down walls between cells in different sets
+                    for(int i = 1; i< row.size() - 3; i+=2) {
+                        if (row[i + 2].currentSet != row[i].currentSet){
+                            row[i+1].type = CORRIDOR;
+                            row[i+2].currentSet = row[i].currentSet;
+                        }
+
+                    }
+
+                    // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                cout << endl << "After knocking walls in last row\nprevious row is:   " << previousRow[0].x  ;
+                showRow(previousRow);
+                cout << "current row is:    " << row[0].x ;
+                showRow(row);
+                cout << "next row is:    " << nextRow[0].x;
+                showRow(nextRow);
+                    cout << endl;
+
+
+                cout << " !!!!!!!!!!!!!!!!!!!!!!!!! END FOR LAST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+                // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                }
 }
 
 int getNewSetNumber(int currentSetNumber, set<int> &usedNumbers) {
-    if (currentSetNumber != -1)
+    if (currentSetNumber != NO_SET_ASSIGNED)
         return currentSetNumber;
     else {
         int newSetNumber = currentSetNumber;
@@ -334,7 +378,7 @@ void showLabirynth(Labirynth &labirynth) {
                 }
                 }
         }
-        cout << endl;
+        cout << i << endl;
     }
 }
 
