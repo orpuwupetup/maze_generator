@@ -100,39 +100,6 @@ void showSolution(Labirynth &labirynth)
     }
 }
 
-// utility function used for debugging
-void showPossibleDirections(Cell &cell)
-{
-    // show possible directions that can be followed from the current cell
-    cout << endl << "Possible directions: ";
-    for (Direction dir: cell.possibleDirections)
-    {
-        switch (dir)
-        {
-        case UP :
-        {
-            cout << " UP ";
-            break;
-        }
-        case LEFT :
-        {
-            cout << " LEFT ";
-            break;
-        }
-        case RIGHT :
-        {
-            cout << " RIGHT ";
-            break;
-        }
-        case DOWN :
-        {
-            cout << " DOWN ";
-            break;
-        }
-        }
-    }
-}
-
 void solveLabirynth(Labirynth &labirynth, vector<char> &writtenSolution)
 {
     Cell startNode;
@@ -159,17 +126,8 @@ void solveLabirynth(Labirynth &labirynth, vector<char> &writtenSolution)
     // start of maze solving loop
     do
     {
-        cout << endl << "ebefore directions check, top cell is\ntype: " << solution.top().type << "\nx: " << solution.top().x << "\ny: " << solution.top().y << endl;
-        showPossibleDirections(solution.top());
-
-
         // check possible directions for current cell
         checkDirections(solution.top(), labirynth);
-
-
-        cout << endl << "after direction check top cell is\ntype: " << solution.top().type << "\nx: " << solution.top().x << "\ny: " << solution.top().y << endl;
-        showPossibleDirections(solution.top());
-
 
         // get number of possible directions
         int numberOfDirections = solution.top().possibleDirections.size();
@@ -177,10 +135,6 @@ void solveLabirynth(Labirynth &labirynth, vector<char> &writtenSolution)
         // if no possible directions left
         if (numberOfDirections == 0)
         {
-
-            cout << "NO DIRECTIONS POSSIBLE" << endl;
-
-
             // if there are no directions left to follow, it means that algorithm encountered dead and, so we want to pop last cell from solution stack to go back a little bit
             solution.pop();
 
@@ -215,24 +169,14 @@ void solveLabirynth(Labirynth &labirynth, vector<char> &writtenSolution)
         solution.top().possibleDirections.erase(takenDirection);
         solution.top().searchedDirections.insert(takenDirection);
 
-
-        cout << endl << "after erasing current step, top cell is\ntype: " << solution.top().type << "\nx: " << solution.top().x << "\ny: " << solution.top().y << endl;
-        showPossibleDirections(solution.top());
-        cout << endl;
-
-        cout << endl << "Taken direction ";
-
-        // 'move' through the maze in the correct direction according to which one was drawn and set parent direction for newly selected cell
-        // add parent direction to searched directions set as well, to prevent unneeded backtracking
+        /*
+            'move' through the maze in the correct direction according to which one was drawn and set parent direction for newly selected cell
+            add parent direction to searched directions set as well, to prevent unneeded backtracking
+        */
         switch (takenDirection)
         {
         case UP :
         {
-
-
-            cout << "UP" << endl;
-
-
             solution.push(labirynth[solution.top().x-1][solution.top().y]);
             solution.top().parentDirection = DOWN;
             solution.top().searchedDirections.insert(DOWN);
@@ -240,11 +184,6 @@ void solveLabirynth(Labirynth &labirynth, vector<char> &writtenSolution)
         }
         case LEFT :
         {
-
-
-            cout << "LEFT" << endl;
-
-
             solution.push(labirynth[solution.top().x][solution.top().y-1]);
             solution.top().parentDirection = RIGHT;
             solution.top().searchedDirections.insert(RIGHT);
@@ -252,11 +191,6 @@ void solveLabirynth(Labirynth &labirynth, vector<char> &writtenSolution)
         }
         case RIGHT :
         {
-
-
-            cout << "RIGHT" << endl;
-
-
             solution.push(labirynth[solution.top().x][solution.top().y+1]);
             solution.top().parentDirection = LEFT;
             solution.top().searchedDirections.insert(LEFT);
@@ -264,11 +198,6 @@ void solveLabirynth(Labirynth &labirynth, vector<char> &writtenSolution)
         }
         case DOWN :
         {
-
-
-            cout << "DOWN" << endl;
-
-
             solution.push(labirynth[solution.top().x+1][solution.top().y]);
             solution.top().parentDirection = UP;
             solution.top().searchedDirections.insert(UP);
@@ -279,15 +208,7 @@ void solveLabirynth(Labirynth &labirynth, vector<char> &writtenSolution)
         // delete parent direction from possible directions set as well, to prevent unneeded backtracking
         solution.top().possibleDirections.erase(solution.top().parentDirection);
 
-        cout << endl << "after loop ";
-        cout << endl << "end of loop, top cell is\ntype: " << solution.top().type << "\nx: " << solution.top().x << "\ny: " << solution.top().y << endl;
-        showPossibleDirections(solution.top());
-
-        cout << "\n !!!!!!!!!! END OF LOOP !!!!!!!!!!\n";
-
-
-    } // if End cell is reached, end the loop
-    while (solution.top().type != END);
+    } while (solution.top().type != END); // if End cell is reached, end the loop
 
     // pop end cell from solution, so that it will show as @ in stead of as solution cell
     solution.pop();
@@ -411,7 +332,6 @@ bool checkInput(int height, int width)
 
 Labirynth generateLabirynth(int height, int width)
 {
-
     Labirynth labirynth = initLabirynth(height, width);
 
     RowType rowType = NO_ROW;
@@ -457,42 +377,6 @@ RowType getRowType(int currentIndex, int maxIndex)
         return STANDARD;
 }
 
-// utility function used for debugging
-// DELETE LATER    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void showRow(Row row)
-{
-    cout << endl;
-    for (int i = 0; i < row.size(); i++)
-    {
-        Cell cell = row[i];
-
-        if (cell.type == WALL)
-        {
-            cout << "#";
-        }
-        else if (cell.type == START)
-        {
-            cout << "$";
-        }
-        else if (cell.type == END)
-        {
-            cout << "@";
-        }
-        else
-        {
-            if(cell.currentSet == NO_SET_ASSIGNED)
-            {
-                cout << " ";
-            }
-            else
-            {
-                cout << cell.currentSet;
-            }
-        }
-    }
-    cout << endl;
-}
-
 void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shortestPossibleLabirynth)
 {
     // if first row, set starting point at random point at the top of the labirynth
@@ -509,7 +393,7 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
         previousRow[entrance].currentSet = 1;
     }
 
-    // Standard row creation done on every row
+    // Standard row creation
 
     // set created to know what set numbers are already in use
     set<int> usedSetNumbers;
@@ -529,37 +413,12 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
         }
     }
 
-
-    // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cout << endl << "after assigning set from previous row \nprevious row is:   " << previousRow[0].x  ;
-    showRow(previousRow);
-    cout << "current row is:    " << row[0].x ;
-    showRow(row);
-    cout << "next row is:    " << nextRow[0].x;
-    showRow(nextRow);
-    cout << endl;
-
-    // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
     // if cell don't belong to any set, assign it to its unique set
     for(int i = 1; i< row.size() - 1; i+=2)
     {
         row[i].currentSet = getNewSetNumber(row[i].currentSet, usedSetNumbers);
         usedSetNumbers.insert(row[i].currentSet);
     }
-
-
-    // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cout << endl << "After assigning each corridor cell new set number, different from any other \nprevious row is:   " << previousRow[0].x  ;
-    showRow(previousRow);
-    cout << "current row is:    " << row[0].x ;
-    showRow(row);
-    cout << "next row is:    " << nextRow[0].x;
-    showRow(nextRow);
-    cout << endl;
-    // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
     // Randomly generate passages or leave walls between adjacent row cells
     for(int i = 1; i< row.size() - 3; i+=2)
@@ -590,18 +449,6 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
         // if cells are in same set, leave wall between them to prevent loops in the maze
     }
 
-
-    // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cout << endl << "After joining or dividing adjacent cells\nprevious row is:   " << previousRow[0].x  ;
-    showRow(previousRow);
-    cout << "current row is:    " << row[0].x ;
-    showRow(row);
-    cout << "next row is:    " << nextRow[0].x;
-    showRow(nextRow);
-    cout << endl;
-    // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
     /*
     Only difference between standard and last row creation
         For last row, after randomly joining or dividing adjacent cells, knock down walls between cells
@@ -630,24 +477,13 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
 
         // add exit point at random place in last row
         int exit = getRandomIntFromRange(1, previousRow.size() - 2);
+
+        // if exit is not below valid corridor, move it one place to the right
+        if (exit % 2 == 0) {
+            exit++;
+        }
+
         nextRow[exit].type = END;
-        if(exit %2 == 0)
-            row[exit].type = CORRIDOR;
-
-
-        // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        cout << endl << "After knocking walls in last row\nprevious row is:   " << previousRow[0].x  ;
-        showRow(previousRow);
-        cout << "current row is:    " << row[0].x ;
-        showRow(row);
-        cout << "next row is:    " << nextRow[0].x;
-        showRow(nextRow);
-        cout << endl;
-
-        cout << " !!!!!!!!!!!!!!!!!!!!!!!!! END FOR LAST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-        // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
     }
     else
     {
@@ -679,20 +515,6 @@ void setRow(Row &row, Row &previousRow, Row &nextRow, RowType rowType, bool shor
 
             }
         }
-
-
-        // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        cout << endl << "After making random bottom passages\nprevious row is:   " << previousRow[0].x  ;
-        showRow(previousRow);
-        cout << "current row is:    " << row[0].x ;
-        showRow(row);
-        cout << "next row is:    " << nextRow[0].x;
-        showRow(nextRow);
-        cout << endl;
-        cout << " !!!!!!!!!!!!!!!!!!!!!!!!! END FOR STANDARD !!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-        // DELETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
     }
 }
 
@@ -726,16 +548,6 @@ bool generateRandomBool()
 
 void showLabirynth(Labirynth &labirynth)
 {
-
-
-    // show Y indexes on top of labirynth for easier debugging
-    cout << endl;
-    for (int i=0; i < labirynth.size(); i++)
-    {
-        cout << i;
-    }
-
-
     cout << endl;
 
     // for every cell in the labirynth, show correct sign according to its CellType
@@ -777,7 +589,7 @@ void showLabirynth(Labirynth &labirynth)
             }
             }
         }
-        cout << i << endl;
+        cout << endl;
     }
 }
 

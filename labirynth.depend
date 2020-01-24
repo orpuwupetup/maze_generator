@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1579878412 source:d:\pjatk\programowanie\labirynth\main.cpp
+1579880195 source:d:\pjatk\programowanie\labirynth\main.cpp
 	<iostream>
 	<stdlib.h>
 	<time.h>
