@@ -1,10 +1,11 @@
 # depslib dependency file v1.0
-1579804544 source:d:\pjatk\programowanie\labirynth\main.cpp
+1579878412 source:d:\pjatk\programowanie\labirynth\main.cpp
 	<iostream>
 	<stdlib.h>
 	<time.h>
 	<vector>
 	<set>
+	<stack>
 
 1579698777 source:c:\users\cezary.graban\desktop\documents\programingi\maze_generator\main.cpp
 	<iostream>
